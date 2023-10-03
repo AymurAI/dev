@@ -24,10 +24,25 @@ localidades = pd.read_csv("/resources/data-augmentation/localidades.csv")
 
 
 class CarProvider(BaseProvider):
+    """Car provider for faker. It provides car models and license plates."""
+
     def random_bool(self, p: float = 0.5) -> bool:
+        """Generates a random boolean with a given probability of returning True.
+
+        Args:
+            p (float, optional): probability of returning True. Defaults to 0.5.
+
+        Returns:
+            bool: random boolean.
+        """
         return self.random_element(OrderedDict([(True, p), (False, 1 - p)]))
 
     def plate(self) -> str:
+        """Generates a random license plate.
+
+        Returns:
+            str: random license plate.
+        """
         license_plate = faker.license_plate()
         len_license_plate = len(license_plate)
 
@@ -47,6 +62,11 @@ class CarProvider(BaseProvider):
         return license_plate
 
     def car_model(self) -> str:
+        """Generates a random car model. It uses the car models from the file cars.json.
+
+        Returns:
+            str: random car model.
+        """
         brand = self.random_element(list(cars.keys()))
         model = self.random_element(cars.get(brand))
         brand_model = f"{brand} {model}"
@@ -59,10 +79,25 @@ class CarProvider(BaseProvider):
 
 
 class DatePlaceProvider(BaseProvider):
+    """Date and place provider for faker."""
+
     def random_bool(self, p: float = 0.5) -> bool:
+        """Generates a random boolean with a given probability of returning True.
+
+        Args:
+            p (float, optional): probability of returning True. Defaults to 0.5.
+
+        Returns:
+            bool: random boolean.
+        """
         return self.random_element(OrderedDict([(True, p), (False, 1 - p)]))
 
     def formatted_date(self) -> str:
+        """Generates a random date in a given format.
+
+        Returns:
+            str: random date.
+        """
         formats = [
             "%A %d de %B del %Y",
             "%d de %B del %Y",
@@ -78,6 +113,11 @@ class DatePlaceProvider(BaseProvider):
         return dt.strftime(fmt)
 
     def direction(self) -> str:
+        """Generates a random address, intersection or street.
+
+        Returns:
+            str: random address, intersection or street.
+        """
         fmt = self.random_element(
             OrderedDict([["address", 0.6], ["intersection", 0.3], ["street", 0.1]])
         )
@@ -91,6 +131,11 @@ class DatePlaceProvider(BaseProvider):
         return re.sub(r"\n.+$", "", faker.address())
 
     def location(self) -> str:
+        """Generates a random location. It uses the locations from the file localidades.csv.
+
+        Returns:
+            str: random location.
+        """
         sample = self.random_element(localidades.values)
         sample = [element for element in sample if not pd.isna(element)]
         levels = self.random_int(1, 4)
@@ -105,10 +150,25 @@ class DatePlaceProvider(BaseProvider):
 
 
 class JudicialProvider(BaseProvider):
+    """Judicial provider for faker. It provides judicial document numbers."""
+
     def random_bool(self, p: float = 0.5) -> bool:
+        """Generates a random boolean with a given probability of returning True.
+
+        Args:
+            p (float, optional): probability of returning True. Defaults to 0.5.
+
+        Returns:
+            bool: random boolean.
+        """
         return self.random_element(OrderedDict([(True, p), (False, 1 - p)]))
 
     def exp(self) -> str:
+        """Generates a random judicial expedient number.
+
+        Returns:
+            str: random judicial expedient number.
+        """
         prefix = self.random_element(["IPP", "CAU", "DEB", "INC"])
         one_digit = str(self.random_digit())
         year = str(self.random_int(min=1990, max=2100))
@@ -120,6 +180,11 @@ class JudicialProvider(BaseProvider):
         return f"{prefix} {three_six_digits}/{year}-{one_digit}"
 
     def cuij(self) -> str:
+        """Generates a random CUIJ.
+
+        Returns:
+            str: random CUIJ.
+        """
         prefix = self.random_element(["IPP", "CAU", "DEB", "INC"])
 
         one_digit = str(self.random_digit())
@@ -134,6 +199,11 @@ class JudicialProvider(BaseProvider):
         return f"{prefix} J-{two_digits}-{eight_digits}-{one_digit}/{year}-{one_digit}"
 
     def act(self) -> str:
+        """Generates a random judicial act number.
+
+        Returns:
+            str: random judicial act number.
+        """
         year = str(self.random_int(min=1990, max=2100))
 
         size = self.random_int(2, 7)
@@ -143,10 +213,29 @@ class JudicialProvider(BaseProvider):
 
 
 class NumberProvider(BaseProvider):
+    """Number provider for faker. It provides numbers, CUIT/CUIL, CBU, phone numbers, registers and savings accounts."""  # noqa
+
     def random_bool(self, p: float = 0.5) -> bool:
+        """Generates a random boolean with a given probability of returning True.
+
+        Args:
+            p (float, optional): probability of returning True. Defaults to 0.5.
+
+        Returns:
+            bool: random boolean.
+        """
         return self.random_element(OrderedDict([(True, p), (False, 1 - p)]))
 
     def _insert_dots_or_spaces(self, register: str, fmt: str) -> str:
+        """Inserts dots or spaces in a given register.
+
+        Args:
+            register (str): register to be formatted.
+            fmt (str): format to be applied. It can be "dotted" or "spaced".
+
+        Returns:
+            str: formatted register.
+        """
         reversed_register = register[::-1]
 
         if fmt == "spaced":
@@ -158,6 +247,11 @@ class NumberProvider(BaseProvider):
         return register
 
     def cuit_cuil(self) -> str:
+        """Generates a random CUIT/CUIL.
+
+        Returns:
+            str: random CUIT/CUIL.
+        """
         prefix = self.random_element([20, 23, 24, 25, 26, 27, 30])
         inner = self.random_int(min=int(1e7), max=int(1e9 - 1))
         suffix = self.random_int(0, 10)
@@ -170,11 +264,21 @@ class NumberProvider(BaseProvider):
         return cuit_cuil
 
     def cbu(self) -> str:
+        """Generates a random CBU. It uses the bank codes from the file bank_codes.list.
+
+        Returns:
+            str: random CBU.
+        """
         bank_code = self.random_element(bank_codes)
         nineteen_digits = [str(self.random_digit()) for _ in range(19)]
         return f"{bank_code}{''.join(nineteen_digits)}"
 
     def phone(self) -> str:
+        """Generates a random phone number.
+
+        Returns:
+            str: random phone number.
+        """
         phone_number = faker.phone_number()
 
         remove_prefix = self.random_bool(p=0.95)
@@ -194,6 +298,11 @@ class NumberProvider(BaseProvider):
         return phone_number
 
     def register(self) -> str:
+        """Generates a random register.
+
+        Returns:
+            str: random register.
+        """
         n_digits = self.random_int(5, 6)
         digits = [str(self.random_digit()) for _ in range(n_digits)]
         digits = "".join(digits)
@@ -208,6 +317,11 @@ class NumberProvider(BaseProvider):
         return digits
 
     def savings_account(self) -> str:
+        """Generates a random savings account.
+
+        Returns:
+            str: random savings account.
+        """
         account_type = self.random_element(["0200", "0210"])
 
         prefix = [str(self.random_digit()) for _ in range(2)]
@@ -223,10 +337,29 @@ class NumberProvider(BaseProvider):
 
 
 class PersonProvider(Provider):
+    """Person provider for faker. It provides person-related information, such as name, age, DNI, etc."""  # noqa
+
     def random_bool(self, p: float = 0.5) -> bool:
+        """Generates a random boolean with a given probability of returning True.
+
+        Args:
+            p (float, optional): probability of returning True. Defaults to 0.5.
+
+        Returns:
+            bool: random boolean.
+        """
         return self.random_element(OrderedDict([(True, p), (False, 1 - p)]))
 
     def _insert_dots_or_spaces(self, dni: str, fmt: str) -> str:
+        """Inserts dots or spaces in a given DNI.
+
+        Args:
+            dni (str): DNI to be formatted.
+            fmt (str): format to be applied. It can be "dotted" or "spaced".
+
+        Returns:
+            str: formatted DNI.
+        """
         reversed_dni = dni[::-1]
 
         if fmt == "spaced":
@@ -242,6 +375,11 @@ class PersonProvider(Provider):
         return dni
 
     def name(self) -> str:
+        """Generates a random name.
+
+        Returns:
+            str: random name.
+        """
         n_last_names = self.random_int(1, 4)
         last_names = " ".join([faker.last_name() for i in range(n_last_names)])
 
@@ -260,6 +398,11 @@ class PersonProvider(Provider):
         return delimiter.join(initials)
 
     def age(self) -> str:
+        """Generates a random age.
+
+        Returns:
+            str: random age.
+        """
         # TODO: add num2words to handle numbers in words
         in_years = self.random_bool(p=0.8)
 
@@ -272,6 +415,11 @@ class PersonProvider(Provider):
             return f"{age} meses" if age > 1 else f"{age} mes"
 
     def dni(self) -> str:
+        """Generates a random DNI.
+
+        Returns:
+            str: random DNI.
+        """
         dni = str(self.random_int(min=1_000_000, max=100_000_000))
 
         fmt = self.random_element(
@@ -283,9 +431,19 @@ class PersonProvider(Provider):
         return dni
 
     def nationality(self) -> str:
+        """Generates a random nationality. It uses the nationalities from the file nationalities.list.
+
+        Returns:
+            str: random nationality.
+        """
         return self.random_element(nationalities)
 
     def studies(self) -> str:
+        """Generates a random level of studies.
+
+        Returns:
+            str: random level of studies.
+        """
         levels = ["primarios", "secundarios", "terciarios", "universitarios"]
         status = ["completos", "incompletos", "en curso"]
 
@@ -294,6 +452,7 @@ class PersonProvider(Provider):
         return f"estudios {level} {status}"
 
 
+# initialize faker and add providers
 faker = Faker(locale="es_AR")
 faker.add_provider(CarProvider)
 faker.add_provider(DatePlaceProvider)
@@ -302,6 +461,7 @@ faker.add_provider(NumberProvider)
 faker.add_provider(PersonProvider)
 
 
+# mapping from entity to faker function to be used for data augmentation
 augmentation_functions = {
     "PER": faker.name,
     "EDAD": faker.age,
